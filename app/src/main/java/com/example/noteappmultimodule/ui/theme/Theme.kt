@@ -106,7 +106,6 @@ fun NoteAppMultiModuleTheme(
         }
     }
 
-
     SideEffect {
         val window = (view.context as Activity).window
 
