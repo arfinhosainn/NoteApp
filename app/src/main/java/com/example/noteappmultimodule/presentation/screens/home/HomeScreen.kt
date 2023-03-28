@@ -7,22 +7,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.noteappmultimodule.R
+import com.example.noteappmultimodule.data.Notes
+import com.example.noteappmultimodule.model.RequestState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    notes: Notes,
     onMenuClicked: () -> Unit,
     navigateToWrite: () -> Unit,
     onSignOutClicked: () -> Unit,
     drawerState: DrawerState
 ) {
 
+    var padding by remember {
+        mutableStateOf(PaddingValues())
+    }
 
     NavigationDrawer(
         drawerState = drawerState,
@@ -32,7 +40,13 @@ fun HomeScreen(
             HomeTopBar(onMenuClicked = onMenuClicked)
 
         }, floatingActionButton = {
-            FloatingActionButton(onClick = navigateToWrite) {
+            FloatingActionButton(
+                modifier = Modifier.padding(
+                    end = padding.calculateEndPadding(
+                        LayoutDirection.Ltr
+                    )
+                ), onClick = navigateToWrite
+            ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "New Note Icon"
@@ -41,12 +55,31 @@ fun HomeScreen(
             }
         },
             content = {
+                padding = it
+                when (notes) {
+                    is RequestState.Success -> {
+                        HomeContent(
+                            notes = notes.data,
+                            onClick = {},
+                            paddingValues = it
+                        )
+                    }
+                    is RequestState.Error -> {
+                        EmptyPage(title = "Error", subtitle = "Not Found Note")
+                    }
+                    RequestState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    else -> {}
+                }
             }
         )
-
     }
-
-
 }
 
 

@@ -13,16 +13,23 @@ import com.example.noteappmultimodule.utils.Constants.APP_ID
 import io.realm.kotlin.mongodb.App
 
 class MainActivity : ComponentActivity() {
+
+    var keepSplashOpened = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen()
+        installSplashScreen().setKeepOnScreenCondition{
+            keepSplashOpened
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             NoteAppMultiModuleTheme {
                 val navController = rememberNavController()
                 SetupNavGraph(
                     startDestination = getStartDestination(),
-                    navController = navController
+                    navController = navController,
+                    onDataLoaded = {
+                        keepSplashOpened = false
+                    }
                 )
             }
         }

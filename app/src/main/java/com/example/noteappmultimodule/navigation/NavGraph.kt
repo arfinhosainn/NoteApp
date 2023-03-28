@@ -9,10 +9,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.noteappmultimodule.data.MongoDB
+import com.example.noteappmultimodule.model.RequestState
 import com.example.noteappmultimodule.presentation.components.DisplayAlertDialog
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationScreen
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationViewModel
 import com.example.noteappmultimodule.presentation.screens.home.HomeScreen
+import com.example.noteappmultimodule.presentation.screens.home.HomeViewModel
 import com.example.noteappmultimodule.utils.Constants.APP_ID
 import com.example.noteappmultimodule.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -24,7 +27,8 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun SetupNavGraph(
-    startDestination: String, navController: NavHostController
+    startDestination: String, navController: NavHostController,
+    onDataLoaded: () -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -43,7 +47,8 @@ fun SetupNavGraph(
             navigateToAuth = {
                 navController.popBackStack()
                 navController.navigate(Screen.Authentication.route)
-            }
+            },
+            onDataLoaded = onDataLoaded
         )
         writeRoute()
 
@@ -94,15 +99,25 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.homeRoute(
     navigateToWrite: () -> Unit,
-    navigateToAuth: () -> Unit
+    navigateToAuth: () -> Unit,
+    onDataLoaded : () -> Unit
 ) {
     composable(route = Screen.Home.route) {
+        val viewModel: HomeViewModel = viewModel()
+        val notes by viewModel.notes
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var signOutDialogOpened by remember {
             mutableStateOf(false)
         }
+
+        LaunchedEffect(key1 = notes){
+            if (notes !is RequestState.Loading){
+                onDataLoaded()
+            }
+        }
         HomeScreen(
+            notes = notes,
             onMenuClicked = {
                 scope.launch {
                     drawerState.open()
@@ -112,6 +127,10 @@ fun NavGraphBuilder.homeRoute(
             onSignOutClicked = { signOutDialogOpened = true },
             drawerState = drawerState
         )
+        LaunchedEffect(key1 = Unit,){
+            MongoDB.getAllNotes()
+        }
+
         DisplayAlertDialog(
             title = "Sign Out",
             message = "Are you sure you want to Sign Out from your Google Account?",

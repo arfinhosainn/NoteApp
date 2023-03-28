@@ -35,7 +35,7 @@ fun NoteHolder(note: Note, onClick: (String) -> Unit) {
     }
     val localDensity = LocalDensity.current
     var galleryOpened by remember { mutableStateOf(false) }
-    var galleryLoading by remember { mutableStateOf(false) }
+    val galleryLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Row(modifier = Modifier.clickable(indication = null,
