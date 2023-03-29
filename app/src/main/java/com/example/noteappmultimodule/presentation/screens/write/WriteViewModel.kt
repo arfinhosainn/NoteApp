@@ -11,10 +11,13 @@ import com.example.noteappmultimodule.model.Mood
 import com.example.noteappmultimodule.model.Note
 import com.example.noteappmultimodule.model.RequestState
 import com.example.noteappmultimodule.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
+import com.example.noteappmultimodule.utils.toRealmInstant
 import io.realm.kotlin.types.ObjectId
+import io.realm.kotlin.types.RealmInstant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.ZonedDateTime
 
 class WriteViewModel(
     private val savedStateHandle: SavedStateHandle
@@ -35,6 +38,48 @@ class WriteViewModel(
         )
     }
 
+
+    fun upsertNote(
+        note: Note,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (uiState.selectedNoteId != null) {
+                updateNote(note, onSuccess, onError)
+            } else {
+                insertNote(note, onSuccess, onError)
+            }
+        }
+    }
+
+
+    private suspend fun updateNote(
+        note: Note,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val result = MongoDB.updateNote(note.apply {
+            _id = ObjectId.Companion.from(uiState.selectedNoteId!!)
+            date = if (uiState.updateDateTime != null) {
+                uiState.updateDateTime!!
+            } else {
+                uiState.selectedNote!!.date
+            }
+        })
+
+        if (result is RequestState.Success) {
+            withContext(Dispatchers.Main) {
+                onSuccess()
+            }
+        } else if (result is RequestState.Error) {
+            withContext(Dispatchers.Main) {
+                onError(result.error.message.toString())
+            }
+        }
+    }
+
+
     private fun fetchSelectedNote() {
         if (uiState.selectedNoteId != null) {
             viewModelScope.launch {
@@ -53,13 +98,17 @@ class WriteViewModel(
     }
 
 
-    fun insertNote(
+    private fun insertNote(
         note: Note,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val result = MongoDB.addNewNote(note)
+            val result = MongoDB.addNewNote(note.apply {
+                if (uiState.updateDateTime != null) {
+                    date = uiState.updateDateTime!!
+                }
+            })
             if (result is RequestState.Success) {
                 withContext(Dispatchers.Main) {
                     onSuccess()
@@ -76,6 +125,13 @@ class WriteViewModel(
     fun setTitle(title: String) {
         uiState = uiState.copy(title = title)
     }
+
+    fun updateDateTime(zonedDateTime: ZonedDateTime) {
+        uiState =
+            uiState.copy(updateDateTime = zonedDateTime.toInstant().toRealmInstant())
+
+    }
+
 
     fun setDescription(description: String) {
         uiState = uiState.copy(description = description)
@@ -98,5 +154,6 @@ data class UiState(
     val title: String = "",
     val selectedNote: Note? = null,
     val description: String = "",
-    val mood: Mood = Mood.Neutral
+    val mood: Mood = Mood.Neutral,
+    val updateDateTime: RealmInstant? = null
 )

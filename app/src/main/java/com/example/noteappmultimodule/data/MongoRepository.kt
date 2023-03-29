@@ -17,4 +17,6 @@ interface MongoRepository {
 
     suspend fun addNewNote(note: Note): RequestState<Note>
 
+    suspend fun updateNote(note: Note): RequestState<Note>
+
 }

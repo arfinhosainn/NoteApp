@@ -9,6 +9,7 @@ import com.example.noteappmultimodule.model.Mood
 import com.example.noteappmultimodule.model.Note
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
+import java.time.ZonedDateTime
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -21,7 +22,8 @@ fun WriteScreen(
     pagerState: PagerState,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
-    onSavedClick: (Note) -> Unit
+    onSavedClick: (Note) -> Unit,
+    onUpdateDateTime: (ZonedDateTime) -> Unit
 ) {
     LaunchedEffect(key1 = uiState.mood) {
         pagerState.scrollToPage(Mood.valueOf(uiState.mood.name).ordinal)
@@ -33,7 +35,8 @@ fun WriteScreen(
                 onBackPressed = onBackPressed,
                 selectedNote = uiState.selectedNote,
                 onDeleteConfirmed = onDeleteNoteConfirmed,
-                moodName = moodName
+                moodName = moodName,
+                onUpdateDateTime = onUpdateDateTime
             )
 
         }, content = {

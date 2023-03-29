@@ -202,11 +202,14 @@ fun NavGraphBuilder.writeRoute(
             uiState = uiState,
             moodName = { Mood.values()[pageNumber].name },
             onSavedClick = {
-                viewModel.insertNote(
+                viewModel.upsertNote(
                     note = it.apply { mood = Mood.values()[pageNumber].name },
                     onSuccess = {onBackPressed()},
                     onError = {})
 
+            },
+            onUpdateDateTime = {
+                viewModel.updateDateTime(it)
             }
         )
 

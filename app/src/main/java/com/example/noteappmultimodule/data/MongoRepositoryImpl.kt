@@ -94,6 +94,27 @@ object MongoDB : MongoRepository {
             RequestState.Error(UserNotAuthenticationException())
         }
     }
+
+
+    override suspend fun updateNote(note: Note): RequestState<Note> {
+        return if (user != null) {
+            realm.write {
+                val queriesNote = query<Note>(query = "_id == $0", note._id).first().find()
+                if (queriesNote != null) {
+                    queriesNote.title = note.title
+                    queriesNote.description = note.description
+                    queriesNote.mood = note.mood
+                    queriesNote.images = note.images
+                    queriesNote.date = note.date
+                    RequestState.Success(data = queriesNote)
+                } else {
+                    RequestState.Error(error = Exception("Queried note does not found"))
+                }
+            }
+        } else {
+            RequestState.Error(UserNotAuthenticationException())
+        }
+    }
 }
 
 private class UserNotAuthenticationException : Exception("User is not Logged in.")
