@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -25,19 +26,21 @@ fun HomeScreen(
     onMenuClicked: () -> Unit,
     navigateToWrite: () -> Unit,
     onSignOutClicked: () -> Unit,
-    drawerState: DrawerState
+    drawerState: DrawerState,
+    navigateToWriteWithArgs: (String) -> Unit
 ) {
 
     var padding by remember {
         mutableStateOf(PaddingValues())
     }
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     NavigationDrawer(
         drawerState = drawerState,
         onSignOutClicked = onSignOutClicked,
         onDeleteAllClicked = { /*TODO*/ }) {
-        Scaffold(topBar = {
-            HomeTopBar(onMenuClicked = onMenuClicked)
+        Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
+            HomeTopBar(onMenuClicked = onMenuClicked, onScrollBehavior = scrollBehavior)
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -60,7 +63,9 @@ fun HomeScreen(
                     is RequestState.Success -> {
                         HomeContent(
                             notes = notes.data,
-                            onClick = {},
+                            onClick = {noteId ->
+                                      navigateToWriteWithArgs(noteId)
+                            },
                             paddingValues = it
                         )
                     }

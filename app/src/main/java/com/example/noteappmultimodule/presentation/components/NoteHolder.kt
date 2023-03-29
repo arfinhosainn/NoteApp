@@ -1,6 +1,10 @@
 package com.example.noteappmultimodule.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -36,9 +39,9 @@ fun NoteHolder(note: Note, onClick: (String) -> Unit) {
     val localDensity = LocalDensity.current
     var galleryOpened by remember { mutableStateOf(false) }
     val galleryLoading by remember { mutableStateOf(false) }
-    val context = LocalContext.current
 
-    Row(modifier = Modifier.clickable(indication = null,
+    Row(modifier = Modifier.clickable(
+        indication = null,
         interactionSource = remember {
             MutableInteractionSource()
         }) {
@@ -79,7 +82,15 @@ fun NoteHolder(note: Note, onClick: (String) -> Unit) {
                         }
                     )
                 }
-                AnimatedVisibility(visible = galleryOpened) {
+                AnimatedVisibility(
+                    visible = galleryOpened,
+                    enter = fadeIn() + expandVertically(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+                ) {
                     Column(modifier = Modifier.padding(all = 14.dp)) {
                         Gallery(images = note.images)
                     }

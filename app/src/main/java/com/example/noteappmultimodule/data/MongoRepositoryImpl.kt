@@ -10,6 +10,7 @@ import io.realm.kotlin.log.LogLevel
 import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.query.Sort
+import io.realm.kotlin.types.ObjectId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -64,6 +65,35 @@ object MongoDB : MongoRepository {
     }
 
 
+    override fun getSelectedNote(noteId: ObjectId): Flow<RequestState<Note>> {
+        return if (user != null) {
+            try {
+                realm.query<Note>(query = "_id == $0", noteId).asFlow().map {
+                    RequestState.Success(data = it.list.first())
+                }
+            } catch (e: Exception) {
+                flow { emit(RequestState.Error(e)) }
+            }
+        } else {
+            flow { emit(RequestState.Error(UserNotAuthenticationException())) }
+        }
+    }
+
+
+    override suspend fun addNewNote(note: Note): RequestState<Note> {
+        return if (user != null) {
+            realm.write {
+                try {
+                    val addedNote = copyToRealm(note.apply { ownerId = user.identity })
+                    RequestState.Success(data = addedNote)
+                } catch (e: Exception) {
+                    RequestState.Error(e)
+                }
+            }
+        } else {
+            RequestState.Error(UserNotAuthenticationException())
+        }
+    }
 }
 
 private class UserNotAuthenticationException : Exception("User is not Logged in.")

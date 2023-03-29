@@ -2,6 +2,7 @@ package com.example.noteappmultimodule.data
 
 import com.example.noteappmultimodule.model.Note
 import com.example.noteappmultimodule.model.RequestState
+import io.realm.kotlin.types.ObjectId
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -12,5 +13,8 @@ interface MongoRepository {
 
     fun configureTheRealm()
     fun getAllNotes(): Flow<Notes>
+    fun getSelectedNote(noteId: ObjectId): Flow<RequestState<Note>>
+
+    suspend fun addNewNote(note: Note): RequestState<Note>
 
 }
