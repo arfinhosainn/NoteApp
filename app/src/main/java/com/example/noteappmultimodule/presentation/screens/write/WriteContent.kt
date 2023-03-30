@@ -4,12 +4,18 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -18,6 +24,7 @@ import com.example.noteappmultimodule.model.Note
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -34,12 +41,19 @@ fun WriteContent(
 
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = scrollState.maxValue) {
+        scrollState.scrollTo(scrollState.maxValue)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
+            .navigationBarsPadding()
             .padding(top = paddingValues.calculateTopPadding())
-            .padding(bottom = paddingValues.calculateBottomPadding())
             .padding(bottom = 24.dp)
             .padding(horizontal = 24.dp), verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -72,9 +86,15 @@ fun WriteContent(
                     disabledIndicatorColor = Color.Unspecified,
                     unfocusedIndicatorColor = Color.Unspecified,
                     placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                ), keyboardActions = KeyboardActions(onNext = {}),
+                ), keyboardActions = KeyboardActions(onNext = {
+                    scope.launch {
+                        scrollState.animateScrollTo(Int.MAX_VALUE)
+                    }
+                    focusManager.moveFocus(FocusDirection.Down)
+                }),
                 maxLines = 1,
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
             TextField(
                 modifier = Modifier.fillMaxWidth(),
@@ -90,7 +110,11 @@ fun WriteContent(
                     unfocusedIndicatorColor = Color.Unspecified,
                     placeholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                 ),
-                keyboardActions = KeyboardActions(onNext = {}),
+                keyboardActions = KeyboardActions(onNext = {
+                    focusManager.clearFocus()
+                }), keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                )
             )
         }
         Column(verticalArrangement = Arrangement.Bottom) {

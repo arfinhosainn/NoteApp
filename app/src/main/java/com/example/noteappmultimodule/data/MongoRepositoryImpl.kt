@@ -115,6 +115,28 @@ object MongoDB : MongoRepository {
             RequestState.Error(UserNotAuthenticationException())
         }
     }
+
+    override suspend fun deleteNote(id: ObjectId): RequestState<Note> {
+        return if (user != null) {
+            realm.write {
+                val note =
+                    query<Note>(query = "_id == $0 AND ownerId == $1", id, user.identity).first()
+                        .find()
+                if (note != null) {
+                    try {
+                        delete(note)
+                        RequestState.Success(data = note)
+                    } catch (e: Exception) {
+                        RequestState.Error(e)
+                    }
+                } else {
+                    RequestState.Error(Exception("Note does not exist"))
+                }
+            }
+        } else {
+            RequestState.Error(UserNotAuthenticationException())
+        }
+    }
 }
 
 private class UserNotAuthenticationException : Exception("User is not Logged in.")

@@ -1,8 +1,10 @@
 package com.example.noteappmultimodule.navigation
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -168,6 +170,7 @@ fun NavGraphBuilder.writeRoute(
     onDeleteConfirmed: () -> Unit
 ) {
 
+
     composable(
         route = Screen.Write.route,
         arguments = listOf(navArgument(WRITE_SCREEN_ARGUMENT_KEY) {
@@ -178,6 +181,7 @@ fun NavGraphBuilder.writeRoute(
     ) {
         val pagerState = rememberPagerState()
         val viewModel: WriteViewModel = viewModel()
+        val context = LocalContext.current
         val uiState = viewModel.uiState
         val pageNumber by remember {
             derivedStateOf {
@@ -191,7 +195,20 @@ fun NavGraphBuilder.writeRoute(
 
         WriteScreen(
             onBackPressed = onBackPressed,
-            onDeleteNoteConfirmed = onDeleteConfirmed,
+            onDeleteNoteConfirmed = {
+                viewModel.deleteNote(
+                    onSuccess = {
+                        Toast.makeText(context, "Note Successfully Deleted", Toast.LENGTH_LONG)
+                            .show()
+                        onBackPressed()
+                    },
+                    onError = {
+                        Toast.makeText(context, it, Toast.LENGTH_LONG)
+                            .show()
+
+                    }
+                )
+            },
             pagerState = pagerState,
             onTitleChanged = {
                 viewModel.setTitle(
@@ -204,8 +221,11 @@ fun NavGraphBuilder.writeRoute(
             onSavedClick = {
                 viewModel.upsertNote(
                     note = it.apply { mood = Mood.values()[pageNumber].name },
-                    onSuccess = {onBackPressed()},
-                    onError = {})
+                    onSuccess = { onBackPressed() },
+                    onError = {
+                        Toast.makeText(context, it, Toast.LENGTH_LONG)
+                            .show()
+                    })
 
             },
             onUpdateDateTime = {
