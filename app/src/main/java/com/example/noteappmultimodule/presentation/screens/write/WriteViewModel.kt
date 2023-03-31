@@ -1,5 +1,7 @@
 package com.example.noteappmultimodule.presentation.screens.write
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,11 +9,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteappmultimodule.data.MongoDB
-import com.example.noteappmultimodule.model.Mood
-import com.example.noteappmultimodule.model.Note
-import com.example.noteappmultimodule.model.RequestState
+import com.example.noteappmultimodule.model.*
 import com.example.noteappmultimodule.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.example.noteappmultimodule.utils.toRealmInstant
+import com.google.firebase.auth.FirebaseAuth
 import io.realm.kotlin.types.ObjectId
 import io.realm.kotlin.types.RealmInstant
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,10 @@ import java.time.ZonedDateTime
 class WriteViewModel(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+
+    val galleryState = GalleryState()
+
     var uiState by mutableStateOf(UiState())
         private set
 
@@ -97,6 +102,20 @@ class WriteViewModel(
                     }
             }
         }
+    }
+
+    fun addImage(image: Uri, imageType: String) {
+        val remoteImagePath = "images/${FirebaseAuth.getInstance().currentUser?.uid}/" +
+                "${image.lastPathSegment}-${System.currentTimeMillis()}.$imageType"
+
+        Log.d("writeviewmodel", "addImage: $remoteImagePath")
+
+        galleryState.addImage(
+            GalleryImage(
+                image = image,
+                remoteImagePath = remoteImagePath
+            )
+        )
     }
 
 

@@ -10,19 +10,23 @@ import com.example.noteappmultimodule.navigation.Screen
 import com.example.noteappmultimodule.navigation.SetupNavGraph
 import com.example.noteappmultimodule.ui.theme.NoteAppMultiModuleTheme
 import com.example.noteappmultimodule.utils.Constants.APP_ID
+import com.google.firebase.FirebaseApp
 import io.realm.kotlin.mongodb.App
 
 class MainActivity : ComponentActivity() {
 
-    var keepSplashOpened = true
+    var keepSplashOpened = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen().setKeepOnScreenCondition{
+        FirebaseApp.initializeApp(this)
+        installSplashScreen().setKeepOnScreenCondition {
             keepSplashOpened
         }
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
-            NoteAppMultiModuleTheme {
+            NoteAppMultiModuleTheme(dynamicColor = false) {
                 val navController = rememberNavController()
                 SetupNavGraph(
                     startDestination = getStartDestination(),

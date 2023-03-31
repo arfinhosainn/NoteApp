@@ -13,8 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.noteappmultimodule.data.MongoDB
+import com.example.noteappmultimodule.model.GalleryImage
 import com.example.noteappmultimodule.model.Mood
 import com.example.noteappmultimodule.model.RequestState
+import com.example.noteappmultimodule.model.rememberGalleryState
 import com.example.noteappmultimodule.presentation.components.DisplayAlertDialog
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationScreen
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationViewModel
@@ -84,7 +86,7 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
             },
             oneTapState = oneTapSignInState,
             messageBarState = messageBarState,
-            onTokenIdReceived = { tokenId ->
+            onSuccessfulFirebaseSignIn = { tokenId ->
                 viewModel.signInWithMongoAtlas(
                     tokenId = tokenId,
                     oneSuccess = {
@@ -102,7 +104,11 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
                 viewModel.setLoading(false)
 
             },
-            navigateToHome = navigateToHome
+            navigateToHome = navigateToHome,
+            onFailedFirebaseSignIn = {
+                messageBarState.addError(it)
+                viewModel.setLoading(false)
+            }
         )
     }
 }
@@ -182,7 +188,9 @@ fun NavGraphBuilder.writeRoute(
         val pagerState = rememberPagerState()
         val viewModel: WriteViewModel = viewModel()
         val context = LocalContext.current
+        val galleryState = viewModel.galleryState
         val uiState = viewModel.uiState
+
         val pageNumber by remember {
             derivedStateOf {
                 pagerState.currentPage
@@ -230,6 +238,17 @@ fun NavGraphBuilder.writeRoute(
             },
             onUpdateDateTime = {
                 viewModel.updateDateTime(it)
+            },
+            galleryState = galleryState,
+            onImageSelect = { image ->
+                val type = context.contentResolver.getType(image)?.split("/")?.last() ?: "jpg"
+
+                Log.d("writeviewmodel", "writeRoute: $image")
+                viewModel.addImage(
+                    image = image,
+                    imageType = type
+                )
+
             }
         )
 

@@ -1,10 +1,13 @@
 package com.example.noteappmultimodule.presentation.screens.write
 
 import android.annotation.SuppressLint
+import android.net.Uri
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.example.noteappmultimodule.model.GalleryState
 import com.example.noteappmultimodule.model.Mood
 import com.example.noteappmultimodule.model.Note
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -18,12 +21,14 @@ fun WriteScreen(
     uiState: UiState,
     onBackPressed: () -> Unit,
     moodName: () -> String,
+    galleryState: GalleryState,
     onDeleteNoteConfirmed: () -> Unit,
     pagerState: PagerState,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
     onSavedClick: (Note) -> Unit,
-    onUpdateDateTime: (ZonedDateTime) -> Unit
+    onUpdateDateTime: (ZonedDateTime) -> Unit,
+    onImageSelect: (Uri) -> Unit
 ) {
     LaunchedEffect(key1 = uiState.mood) {
         pagerState.scrollToPage(Mood.valueOf(uiState.mood.name).ordinal)
@@ -47,8 +52,11 @@ fun WriteScreen(
                 onDescriptionChanged = onDescriptionChanged,
                 description = uiState.description,
                 paddingValues = it,
-                onSavedClick = onSavedClick, uiState = uiState
+                onSavedClick = onSavedClick, uiState = uiState,
+                galleryState = galleryState,
+                onImageSelect = onImageSelect
             )
+            Log.d("onImageSelect", "WriteScreen: $onImageSelect")
 
         }
     )
