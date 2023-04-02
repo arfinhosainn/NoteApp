@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -66,7 +67,9 @@ fun SetupNavGraph(
         )
         writeRoute(onBackPressed = {
             navController.popBackStack()
-        }, onDeleteConfirmed = {})
+        }, onDeleteConfirmed = {
+
+        })
     }
 }
 
@@ -175,8 +178,6 @@ fun NavGraphBuilder.writeRoute(
     onBackPressed: () -> Unit,
     onDeleteConfirmed: () -> Unit
 ) {
-
-
     composable(
         route = Screen.Write.route,
         arguments = listOf(navArgument(WRITE_SCREEN_ARGUMENT_KEY) {
@@ -186,7 +187,7 @@ fun NavGraphBuilder.writeRoute(
         })
     ) {
         val pagerState = rememberPagerState()
-        val viewModel: WriteViewModel = viewModel()
+        val viewModel: WriteViewModel = hiltViewModel()
         val context = LocalContext.current
         val galleryState = viewModel.galleryState
         val uiState = viewModel.uiState
@@ -249,6 +250,9 @@ fun NavGraphBuilder.writeRoute(
                     imageType = type
                 )
 
+            },
+            onImageDeleteClicked = {
+                galleryState.removeImage(it)
             }
         )
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.noteappmultimodule.model.GalleryImage
 import com.example.noteappmultimodule.model.GalleryState
 import com.example.noteappmultimodule.model.Mood
 import com.example.noteappmultimodule.model.Note
@@ -28,6 +29,7 @@ import com.example.noteappmultimodule.presentation.components.GalleryUploader
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
@@ -35,6 +37,7 @@ import kotlinx.coroutines.launch
 fun WriteContent(
     pagerState: PagerState,
     title: String,
+    onImageClicked: (GalleryImage) -> Unit,
     uiState: UiState,
     onTitleChanged: (String) -> Unit,
     onDescriptionChanged: (String) -> Unit,
@@ -130,7 +133,7 @@ fun WriteContent(
                 galleryState = galleryState,
                 onAddClicked = { /*TODO*/ },
                 onImageSelect = onImageSelect,
-                onImageClicked = {}
+                onImageClicked = onImageClicked
             )
             Log.d("onImageSelect", "WriteContent: $onImageSelect")
 
@@ -145,6 +148,8 @@ fun WriteContent(
                             Note().apply {
                                 this.title = uiState.title
                                 this.description = uiState.description
+                                this.images =
+                                    galleryState.images.map { it.remoteImagePath }.toRealmList()
                             }
                         )
                     } else {
