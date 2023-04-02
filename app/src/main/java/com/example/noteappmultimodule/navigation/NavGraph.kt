@@ -1,7 +1,9 @@
 package com.example.noteappmultimodule.navigation
 
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +38,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
+@RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SetupNavGraph(
@@ -116,6 +120,8 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.homeRoute(
     navigateToWrite: () -> Unit,
@@ -124,13 +130,20 @@ fun NavGraphBuilder.homeRoute(
     navigateToWriteWithArgs: (String) -> Unit
 ) {
     composable(route = Screen.Home.route) {
-        val viewModel: HomeViewModel = viewModel()
+        val viewModel: HomeViewModel = hiltViewModel()
         val notes by viewModel.notes
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var signOutDialogOpened by remember {
             mutableStateOf(false)
         }
+
+        var deleteAllDialogOpened by remember {
+            mutableStateOf(false)
+        }
+
+        val context = LocalContext.current
+
 
         LaunchedEffect(key1 = notes) {
             if (notes !is RequestState.Loading) {
@@ -147,7 +160,10 @@ fun NavGraphBuilder.homeRoute(
             navigateToWrite = navigateToWrite,
             onSignOutClicked = { signOutDialogOpened = true },
             drawerState = drawerState,
-            navigateToWriteWithArgs = navigateToWriteWithArgs
+            navigateToWriteWithArgs = navigateToWriteWithArgs,
+            onDeleteAllClicked = {
+                deleteAllDialogOpened = true
+            }
         )
         LaunchedEffect(key1 = Unit) {
             MongoDB.getAllNotes()
@@ -168,6 +184,38 @@ fun NavGraphBuilder.homeRoute(
                         }
                     }
                 }
+            }
+        )
+        DisplayAlertDialog(
+            title = "Delete all notes",
+            message = "Are you sure you want to delete all your notes",
+            dialogOpened = deleteAllDialogOpened,
+            onDialogClosed = { deleteAllDialogOpened = false },
+            onYesClicked = {
+                viewModel.deleteAllNotes(
+                    onSuccess = {
+                        Toast.makeText(context, "All notes deleted successfully", Toast.LENGTH_LONG)
+                            .show()
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    },
+                    onError = {
+                        Toast.makeText(
+                            context,
+                            if (it.message ==
+                                "No internet connection"
+                            ) "We need an internet connection to operation this task" else it.message,
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                        scope.launch {
+                            drawerState.close()
+                        }
+
+                    }
+                )
+
             }
         )
     }

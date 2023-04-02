@@ -27,6 +27,7 @@ fun HomeScreen(
     navigateToWrite: () -> Unit,
     onSignOutClicked: () -> Unit,
     drawerState: DrawerState,
+    onDeleteAllClicked: () -> Unit,
     navigateToWriteWithArgs: (String) -> Unit
 ) {
 
@@ -38,7 +39,7 @@ fun HomeScreen(
     NavigationDrawer(
         drawerState = drawerState,
         onSignOutClicked = onSignOutClicked,
-        onDeleteAllClicked = { /*TODO*/ }) {
+        onDeleteAllClicked = onDeleteAllClicked) {
         Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
             HomeTopBar(onMenuClicked = onMenuClicked, onScrollBehavior = scrollBehavior)
 

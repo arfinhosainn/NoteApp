@@ -19,6 +19,7 @@ interface MongoRepository {
 
     suspend fun updateNote(note: Note): RequestState<Note>
 
-    suspend fun deleteNote(id: ObjectId):RequestState<Note>
+    suspend fun deleteNote(id: ObjectId): RequestState<Note>
+    suspend fun deleteAllNote(): RequestState<Boolean>
 
 }
