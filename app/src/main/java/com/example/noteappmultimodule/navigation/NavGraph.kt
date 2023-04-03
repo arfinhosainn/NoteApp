@@ -16,19 +16,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.noteappmultimodule.data.MongoDB
-import com.example.noteappmultimodule.model.GalleryImage
-import com.example.noteappmultimodule.model.Mood
-import com.example.noteappmultimodule.model.RequestState
-import com.example.noteappmultimodule.model.rememberGalleryState
-import com.example.noteappmultimodule.presentation.components.DisplayAlertDialog
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationScreen
 import com.example.noteappmultimodule.presentation.screens.auth.AuthenticationViewModel
 import com.example.noteappmultimodule.presentation.screens.home.HomeScreen
 import com.example.noteappmultimodule.presentation.screens.home.HomeViewModel
 import com.example.noteappmultimodule.presentation.screens.write.WriteScreen
 import com.example.noteappmultimodule.presentation.screens.write.WriteViewModel
-import com.example.noteappmultimodule.utils.Constants.APP_ID
-import com.example.noteappmultimodule.utils.Constants.WRITE_SCREEN_ARGUMENT_KEY
+import com.example.ui.components.DisplayAlertDialog
+import com.example.util.Constants.APP_ID
+import com.example.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
+import com.example.util.Screen
+import com.example.util.model.Mood
+import com.example.util.model.RequestState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 import com.stevdzasan.messagebar.rememberMessageBarState
@@ -39,7 +38,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-@RequiresApi(Build.VERSION_CODES.N)
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SetupNavGraph(
@@ -163,6 +161,14 @@ fun NavGraphBuilder.homeRoute(
             navigateToWriteWithArgs = navigateToWriteWithArgs,
             onDeleteAllClicked = {
                 deleteAllDialogOpened = true
+            },
+            dateIsSelected = viewModel.dateIsSelected,
+            onDateReset = {
+                viewModel.getNotes()
+
+            },
+            onDateSelected = {
+                viewModel.getNotes(zonedDateTime = it)
             }
         )
         LaunchedEffect(key1 = Unit) {

@@ -1,9 +1,10 @@
 package com.example.noteappmultimodule.data
 
-import com.example.noteappmultimodule.model.Note
-import com.example.noteappmultimodule.model.RequestState
-import com.example.noteappmultimodule.utils.Constants.APP_ID
-import com.example.noteappmultimodule.utils.toInstant
+import android.security.keystore.UserNotAuthenticatedException
+import com.example.util.Constants.APP_ID
+import com.example.util.model.Note
+import com.example.util.model.RequestState
+import com.example.util.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
 import io.realm.kotlin.log.LogLevel
@@ -11,10 +12,14 @@ import io.realm.kotlin.mongodb.App
 import io.realm.kotlin.mongodb.sync.SyncConfiguration
 import io.realm.kotlin.query.Sort
 import io.realm.kotlin.types.ObjectId
+import io.realm.kotlin.types.RealmInstant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 object MongoDB : MongoRepository {
     private val app = App.create(APP_ID)
@@ -154,6 +159,42 @@ object MongoDB : MongoRepository {
             RequestState.Error(UserNotAuthenticationException())
         }
     }
+
+    override fun getFilteredNotes(zonedDateTime: ZonedDateTime): Flow<Notes> {
+        return if (user != null) {
+            try {
+                realm.query<Note>(
+                    "ownerId == $0 AND date < $1 AND date > $2",
+                    user.id,
+                    RealmInstant.from(
+                        LocalDateTime.of(
+                            zonedDateTime.toLocalDate().plusDays(1),
+                            LocalTime.MIDNIGHT
+                        ).toEpochSecond(zonedDateTime.offset), 0
+                    ),
+                    RealmInstant.from(
+                        LocalDateTime.of(
+                            zonedDateTime.toLocalDate(),
+                            LocalTime.MIDNIGHT
+                        ).toEpochSecond(zonedDateTime.offset), 0
+                    ),
+                ).asFlow().map { result ->
+                    RequestState.Success(
+                        data = result.list.groupBy {
+                            it.date.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                flow { emit(RequestState.Error(e)) }
+            }
+        } else {
+            flow { emit(RequestState.Error(UserNotAuthenticatedException())) }
+        }
+    }
+
 }
 
 private class UserNotAuthenticationException : Exception("User is not Logged in.")

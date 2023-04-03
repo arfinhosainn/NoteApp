@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.noteappmultimodule.R
 import com.example.noteappmultimodule.data.Notes
-import com.example.noteappmultimodule.model.RequestState
+import com.example.util.model.RequestState
+import java.time.ZonedDateTime
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,7 +29,10 @@ fun HomeScreen(
     onSignOutClicked: () -> Unit,
     drawerState: DrawerState,
     onDeleteAllClicked: () -> Unit,
-    navigateToWriteWithArgs: (String) -> Unit
+    navigateToWriteWithArgs: (String) -> Unit,
+    dateIsSelected: Boolean,
+    onDateSelected: (ZonedDateTime) -> Unit,
+    onDateReset: () -> Unit
 ) {
 
     var padding by remember {
@@ -39,9 +43,16 @@ fun HomeScreen(
     NavigationDrawer(
         drawerState = drawerState,
         onSignOutClicked = onSignOutClicked,
-        onDeleteAllClicked = onDeleteAllClicked) {
+        onDeleteAllClicked = onDeleteAllClicked
+    ) {
         Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-            HomeTopBar(onMenuClicked = onMenuClicked, onScrollBehavior = scrollBehavior)
+            HomeTopBar(
+                onMenuClicked = onMenuClicked,
+                onScrollBehavior = scrollBehavior,
+                dateIsSelected =dateIsSelected,
+                onDateReset =onDateReset,
+                onDateSelected =onDateSelected
+            )
 
         }, floatingActionButton = {
             FloatingActionButton(
@@ -64,8 +75,8 @@ fun HomeScreen(
                     is RequestState.Success -> {
                         HomeContent(
                             notes = notes.data,
-                            onClick = {noteId ->
-                                      navigateToWriteWithArgs(noteId)
+                            onClick = { noteId ->
+                                navigateToWriteWithArgs(noteId)
                             },
                             paddingValues = it
                         )

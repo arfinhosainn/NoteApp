@@ -1,10 +1,11 @@
 package com.example.noteappmultimodule.data
 
-import com.example.noteappmultimodule.model.Note
-import com.example.noteappmultimodule.model.RequestState
+import com.example.util.model.Note
+import com.example.util.model.RequestState
 import io.realm.kotlin.types.ObjectId
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
+import java.time.ZonedDateTime
 
 
 typealias Notes = RequestState<Map<LocalDate, List<Note>>>
@@ -21,5 +22,7 @@ interface MongoRepository {
 
     suspend fun deleteNote(id: ObjectId): RequestState<Note>
     suspend fun deleteAllNote(): RequestState<Boolean>
+
+    fun getFilteredNotes(zonedDateTime: ZonedDateTime):Flow<Notes>
 
 }

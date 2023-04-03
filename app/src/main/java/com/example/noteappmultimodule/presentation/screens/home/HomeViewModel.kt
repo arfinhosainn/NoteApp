@@ -1,7 +1,6 @@
 package com.example.noteappmultimodule.presentation.screens.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,17 +13,14 @@ import com.example.noteappmultimodule.data.MongoDB
 import com.example.noteappmultimodule.data.Notes
 import com.example.noteappmultimodule.data.database.ImageToDeleteDao
 import com.example.noteappmultimodule.data.database.entity.ImageToDelete
-import com.example.noteappmultimodule.model.RequestState
+import com.example.util.model.RequestState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
+import kotlinx.coroutines.*
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.N)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val connectivity: NetworkConnectivityObserver,
@@ -32,14 +28,55 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
     var notes: MutableState<Notes> = mutableStateOf(RequestState.Idle)
 
-    private var network by mutableStateOf(ConnectivityObserver.Status.Unavailable)
 
+    private lateinit var allNotesJob: Job
+    private lateinit var filteredNotesJob: Job
+
+
+    private var network by mutableStateOf(ConnectivityObserver.Status.Unavailable)
+    var dateIsSelected by mutableStateOf(false)
+        private set
 
     init {
-        observeAllNotes()
+        getNotes()
         viewModelScope.launch {
             connectivity.observe().collect {
                 network = it
+            }
+        }
+    }
+
+    fun getNotes(zonedDateTime: ZonedDateTime? = null) {
+        dateIsSelected = zonedDateTime != null
+        notes.value = RequestState.Loading
+        if (dateIsSelected && zonedDateTime != null) {
+            observeFilteredNotes(zonedDateTime = zonedDateTime)
+        } else {
+            observeAllNotes()
+        }
+    }
+
+
+    private fun observeAllNotes() {
+        allNotesJob = viewModelScope.launch {
+            if (::filteredNotesJob.isInitialized){
+                filteredNotesJob.cancelAndJoin()
+            }
+            MongoDB.getAllNotes().collect { result ->
+                notes.value = result
+            }
+        }
+    }
+
+
+    private fun observeFilteredNotes(zonedDateTime: ZonedDateTime) {
+       filteredNotesJob =  viewModelScope.launch {
+           if (::allNotesJob.isInitialized){
+               allNotesJob.cancelAndJoin()
+           }
+            MongoDB.getFilteredNotes(zonedDateTime = zonedDateTime).collect { result ->
+                notes.value = result
+
             }
         }
     }
@@ -48,7 +85,6 @@ class HomeViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onError: (Throwable) -> Unit
     ) {
-
         if (network == ConnectivityObserver.Status.Available) {
             val userId = FirebaseAuth.getInstance().currentUser?.uid
             val imagesDirectory = "images/${userId}"
@@ -85,15 +121,6 @@ class HomeViewModel @Inject constructor(
                 }
         } else {
             onError(Exception("No internet connection"))
-        }
-    }
-
-
-    private fun observeAllNotes() {
-        viewModelScope.launch {
-            MongoDB.getAllNotes().collect { result ->
-                notes.value = result
-            }
         }
     }
 
