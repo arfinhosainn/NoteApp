@@ -32,7 +32,7 @@ NoteApp is a note taking application with Mongodb, Jetpack Compose, Hilt, Corout
 
 ## Modularization
 
-<img src="/preview/modular.ppg" align="center" width="3840"/>
+<img src="/preview/modular.png" align="center" width="3840"/>
 
 **NoteApp** adopted modularization strategies below:
 
