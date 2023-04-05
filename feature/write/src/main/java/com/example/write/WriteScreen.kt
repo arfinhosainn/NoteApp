@@ -72,7 +72,8 @@ internal fun WriteScreen(
                 onDescriptionChanged = onDescriptionChanged,
                 description = uiState.description,
                 paddingValues = paddingValues,
-                onSavedClick = onSavedClick, uiState = uiState,
+                onSavedClick = onSavedClick,
+                uiState = uiState,
                 galleryState = galleryState,
                 onImageSelect = onImageSelect,
                 onImageClicked = {

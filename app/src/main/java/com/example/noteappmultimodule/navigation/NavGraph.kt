@@ -1,17 +1,14 @@
 package com.example.noteappmultimodule.navigation
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.auth.navigation.authenticationRoute
 import com.example.home.navigation.homeRoute
 import com.example.util.Screen
 import com.example.write.navigation.writeRoute
-import com.google.accompanist.pager.ExperimentalPagerApi
 
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun SetupNavGraph(
     startDestination: String, navController: NavHostController,

@@ -33,7 +33,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.0'
+        kotlinCompilerExtensionVersion  ProjectConfig.extensionVersion
     }
     packagingOptions {
         resources.excludes.add("META-INF/*")
@@ -43,16 +43,14 @@ android {
 dependencies {
     implementation libs.activity.compose
     implementation libs.material3.compose
+    implementation libs.navigation.compose
     implementation libs.one.tap.compose
     implementation libs.message.bar.compose
-    implementation libs.navigation.compose
     implementation libs.firebase.auth
-
-
     implementation libs.coroutines.core
     implementation libs.realm.sync
 
-    implementation(project(":core:util"))
     implementation(project(":core:ui"))
+    implementation(project(":core:util"))
 
 }

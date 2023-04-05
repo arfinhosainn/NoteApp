@@ -1,6 +1,8 @@
 package com.example.home
 
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +59,7 @@ internal class HomeViewModel @Inject constructor(
     }
 
 
+    @SuppressLint("NewApi")
     private fun observeAllNotes() {
         allNotesJob = viewModelScope.launch {
             if (::filteredNotesJob.isInitialized){
@@ -64,6 +67,7 @@ internal class HomeViewModel @Inject constructor(
             }
             MongoDB.getAllNotes().collect { result ->
                 notes.value = result
+                Log.d("allnotes", "observeAllNotes: $result")
             }
         }
     }
@@ -112,7 +116,10 @@ internal class HomeViewModel @Inject constructor(
                                 onSuccess()
                             }
                         } else if (result is RequestState.Error) {
-                            onError(result.error)
+                            withContext(Dispatchers.Main){
+                                onError(result.error)
+
+                            }
                         }
                     }
                 }

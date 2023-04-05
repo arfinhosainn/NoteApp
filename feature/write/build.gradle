@@ -35,7 +35,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.0'
+        kotlinCompilerExtensionVersion  ProjectConfig.extensionVersion
     }
     packagingOptions {
         resources.excludes.add("META-INF/*")
@@ -49,20 +49,19 @@ dependencies {
     implementation libs.navigation.compose
     implementation libs.coil
     implementation libs.accompanist.pager
-    implementation libs.realm.sync
-    implementation libs.firebase.auth
-    implementation libs.firebase.storage
     implementation libs.coroutines.core
+    implementation libs.realm.sync
     implementation libs.date.time.picker
     implementation libs.date.dialog
     implementation libs.time.dialog
     implementation libs.hilt.android
     kapt libs.hilt.compiler
     implementation libs.hilt.navigation.compose
+    implementation libs.firebase.auth
+    implementation libs.firebase.storage
 
-
-    implementation(project(":core:util"))
     implementation(project(":core:ui"))
+    implementation(project(":core:util"))
     implementation(project(":data:mongo"))
 
 

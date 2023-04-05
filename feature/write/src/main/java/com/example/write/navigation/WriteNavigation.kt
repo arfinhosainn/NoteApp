@@ -20,7 +20,8 @@ import com.example.write.WriteViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 
-@ExperimentalPagerApi
+
+@OptIn(ExperimentalPagerApi::class)
 fun NavGraphBuilder.writeRoute(
     onBackPressed: () -> Unit,
     onDeleteConfirmed: () -> Unit

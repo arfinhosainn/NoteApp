@@ -43,7 +43,6 @@ internal class WriteViewModel @Inject constructor(
     private val imagesToDeleteDao: ImageToDeleteDao
 ) : ViewModel() {
 
-
     val galleryState = GalleryState()
 
     var uiState by mutableStateOf(UiState())
@@ -70,7 +69,7 @@ internal class WriteViewModel @Inject constructor(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             if (uiState.selectedNoteId != null) {
-                updateNote(note, onSuccess, onError)
+                updateNote(note = note, onSuccess = onSuccess, onError = onError)
 
             } else {
                 insertNote(note, onSuccess, onError)

@@ -1,5 +1,8 @@
 package com.example.home.navigation
 
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
@@ -18,6 +21,7 @@ import io.realm.kotlin.mongodb.App
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.homeRoute(
     navigateToWrite: () -> Unit,
     navigateToAuth: () -> Unit,
@@ -69,9 +73,9 @@ fun NavGraphBuilder.homeRoute(
             }
         )
 
-        LaunchedEffect(key1 = Unit) {
-            MongoDB.getAllNotes()
-        }
+//        LaunchedEffect(key1 = Unit) {
+//            MongoDB.getAllNotes()
+//        }
 
         DisplayAlertDialog(
             title = "Sign Out",
@@ -98,10 +102,10 @@ fun NavGraphBuilder.homeRoute(
             onYesClicked = {
                 viewModel.deleteAllNotes(
                     onSuccess = {
-                        android.widget.Toast.makeText(
+                        Toast.makeText(
                             context,
                             "All notes deleted successfully",
-                            android.widget.Toast.LENGTH_LONG
+                           Toast.LENGTH_LONG
                         )
                             .show()
                         scope.launch {
@@ -109,12 +113,12 @@ fun NavGraphBuilder.homeRoute(
                         }
                     },
                     onError = {
-                        android.widget.Toast.makeText(
+                        Toast.makeText(
                             context,
                             if (it.message ==
                                 "No internet connection"
                             ) "We need an internet connection to operation this task" else it.message,
-                            android.widget.Toast.LENGTH_LONG
+                          Toast.LENGTH_LONG
                         )
                             .show()
                         scope.launch {

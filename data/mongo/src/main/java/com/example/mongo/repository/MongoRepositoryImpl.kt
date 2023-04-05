@@ -1,6 +1,9 @@
 package com.example.mongo.repository
 
-import android.provider.UserDictionary.Words.APP_ID
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import com.example.util.Constants.APP_ID
 import com.example.util.model.Note
 import com.example.util.model.RequestState
 import com.example.util.toInstant
@@ -35,7 +38,7 @@ object MongoDB : MongoRepository {
             val config = SyncConfiguration.Builder(user, setOf(Note::class))
                 .initialSubscriptions { sub ->
                     add(
-                        query = sub.query<Note>("ownerId == $0", user.identity),
+                        query = sub.query<Note>("ownerId == $0", user.id),
                         name = "user's Note"
                     )
                 }.log(LogLevel.ALL)
@@ -44,13 +47,16 @@ object MongoDB : MongoRepository {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun getAllNotes(): Flow<Notes> {
         return if (user != null) {
             try {
-                realm.query<Note>(query = "ownerId == $0", user.identity)
+                realm.query<Note>(query = "ownerId == $0", user.id)
                     .sort(property = "date", sortOrder = Sort.DESCENDING)
                     .asFlow()
                     .map { result ->
+                        Log.d("allnotes", "getAllNotes: $result")
+
                         RequestState.Success(
                             data = result.list.groupBy {
                                 it.date.toInstant()
@@ -88,7 +94,7 @@ object MongoDB : MongoRepository {
         return if (user != null) {
             realm.write {
                 try {
-                    val addedNote = copyToRealm(note.apply { ownerId = user.identity })
+                    val addedNote = copyToRealm(note.apply { ownerId = user.id })
                     RequestState.Success(data = addedNote)
                 } catch (e: Exception) {
                     RequestState.Error(e)
@@ -124,7 +130,7 @@ object MongoDB : MongoRepository {
         return if (user != null) {
             realm.write {
                 val note =
-                    query<Note>(query = "_id == $0 AND ownerId == $1", id, user.identity).first()
+                    query<Note>(query = "_id == $0 AND ownerId == $1", id, user.id).first()
                         .find()
                 if (note != null) {
                     try {
@@ -146,7 +152,7 @@ object MongoDB : MongoRepository {
     override suspend fun deleteAllNote(): RequestState<Boolean> {
         return if (user != null) {
             realm.write {
-                val notes = this.query<Note>("ownerId == $0", user.identity).find()
+                val notes = this.query<Note>("ownerId == $0", user.id).find()
                 try {
                     delete(notes)
                     RequestState.Success(data = true)
